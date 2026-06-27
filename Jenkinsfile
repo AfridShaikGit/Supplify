@@ -23,6 +23,24 @@ pipeline {
             }
         }
 
+        stage('Build Backend Jar') {
+            steps {
+                sh '''
+                    chmod +x mvnw
+                    ./mvnw clean package -DskipTests
+                '''
+            }
+        }
+
+        stage('Verify Jar') {
+            steps {
+                sh '''
+                    echo "Checking target folder..."
+                    ls -la target
+                '''
+            }
+        }
+
         stage('Build Backend Docker Image') {
             steps {
                 sh '''
