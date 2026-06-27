@@ -19,7 +19,7 @@ pipeline {
         stage('Verify Workspace') {
             steps {
                 sh 'pwd'
-                sh 'ls -la'
+                sh 'ls -R | head -50'
             }
         }
 
@@ -36,7 +36,7 @@ pipeline {
             steps {
                 sh '''
                     echo "Checking target folder..."
-                    ls -la target
+                    ls -la target || true
                 '''
             }
         }
@@ -53,8 +53,9 @@ pipeline {
             steps {
                 sh '''
                     docker build \
-                    -t ${FRONTEND_IMAGE} \
-                    ./src/main/webapp/Supplify
+                        -t ${FRONTEND_IMAGE} \
+                        -f src/main/webapp/Supplify/Dockerfile \
+                        src/main/webapp/Supplify
                 '''
             }
         }
