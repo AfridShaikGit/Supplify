@@ -6,5 +6,6 @@ spec:
   selector:
     app: kafka
   ports:
-    - port: 9092
+    - name: broker
+      port: 9092
       targetPort: 9092
