@@ -49,13 +49,26 @@ pipeline {
             }
         }
 
+        stage('Debug Frontend Path') {
+            steps {
+                sh '''
+                    echo "WORKSPACE: $WORKSPACE"
+                    find . -name Dockerfile
+                    ls -R src/main/webapp || true
+                '''
+            }
+        }
+
         stage('Build Frontend Docker Image') {
             steps {
                 sh '''
+                    cd src/main/webapp/Supplify
+                    ls -la
+
                     docker build \
                         -t ${FRONTEND_IMAGE} \
-                        -f src/main/webapp/Supplify/Dockerfile \
-                        src/main/webapp/Supplify
+                        -f Dockerfile \
+                        .
                 '''
             }
         }
