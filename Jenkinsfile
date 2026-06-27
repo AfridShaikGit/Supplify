@@ -18,8 +18,11 @@ pipeline {
 
         stage('Verify Workspace') {
             steps {
-                sh 'pwd'
-                sh 'ls -R | head -50'
+                sh '''
+                    echo "WORKSPACE: $WORKSPACE"
+                    pwd
+                    ls -R | head -100
+                '''
             }
         }
 
@@ -32,11 +35,11 @@ pipeline {
             }
         }
 
-        stage('Verify Jar') {
+        stage('Verify Backend Jar') {
             steps {
                 sh '''
                     echo "Checking target folder..."
-                    ls -la target || true
+                    ls -la target || exit 1
                 '''
             }
         }
@@ -44,17 +47,24 @@ pipeline {
         stage('Build Backend Docker Image') {
             steps {
                 sh '''
+                    echo "Building backend image..."
                     docker build -t ${BACKEND_IMAGE} .
                 '''
             }
         }
 
-        stage('Debug Frontend Path') {
+        stage('Validate Frontend Dockerfile') {
             steps {
                 sh '''
-                    echo "WORKSPACE: $WORKSPACE"
+                    echo "Searching frontend Dockerfile..."
                     find . -name Dockerfile
-                    ls -R src/main/webapp || true
+
+                    if [ ! -f src/main/webapp/Supplify/Dockerfile ]; then
+                        echo "❌ Frontend Dockerfile NOT FOUND"
+                        exit 1
+                    fi
+
+                    echo "✅ Frontend Dockerfile exists"
                 '''
             }
         }
@@ -62,13 +72,12 @@ pipeline {
         stage('Build Frontend Docker Image') {
             steps {
                 sh '''
-                    cd src/main/webapp/Supplify
-                    ls -la
+                    echo "Building frontend image..."
 
                     docker build \
                         -t ${FRONTEND_IMAGE} \
-                        -f Dockerfile \
-                        .
+                        -f src/main/webapp/Supplify/Dockerfile \
+                        src/main/webapp/Supplify
                 '''
             }
         }
@@ -108,11 +117,11 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo '✅ Pipeline completed successfully!'
         }
 
         failure {
-            echo 'Pipeline failed!'
+            echo '❌ Pipeline failed!'
         }
 
         always {
